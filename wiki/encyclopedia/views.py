@@ -1,20 +1,17 @@
 from django.shortcuts import render
-from django.http import HttpResponse as hres
+from django.http import HttpResponse as hres,HttpResponseRedirect
 from . import util
 from django import forms
+from django.urls import reverse
 import markdown2 as md
+import random
 
 
-class head(forms.Form):
+class inputfield(forms.Form):
     title = forms.CharField(label="Title", widget=forms.TextInput(
-        attrs={"placeholder": "Enter Title", "id": "tbox"})
-                            )
-
-
-class body(forms.Form):
+        attrs={"placeholder": "Enter Title", "id": "tbox"}))
     context = forms.CharField(label="Information", widget=forms.Textarea(
-        attrs={"placeholder": "Enter Description", "id": "bbox"})
-                              )
+        attrs={"placeholder": "Enter Description", "id": "bbox"}))
 
 
 def index(request, name=False):
@@ -30,14 +27,32 @@ def index(request, name=False):
 
 
 # newform(   name,  class, placeholde )
+def rand(request):
+    names =util.list_entries()
+    t = random.randint(0,len(names))
+    print(names[t])
+    return index(request,names[t])
 
 
-def page(request):   #server side validation, title validation  
+
+def page(request):
+    x = inputfield()
+    same = False
     if request.method == "POST":
-        util.save_entry(request.POST["title"],request.POST["context"])
+        try:
+            if request.POST["title"].upper() not in  util.list_entries():
+                util.save_entry(request.POST["title"],request.POST["context"])
+                return HttpResponseRedirect(reverse("index"))
+            else:
+                same = True
+                x = inputfield(request.POST)
 
+
+
+        except:
+            pass
 
     return render(request, "encyclopedia/forms.html", {
-        "title": head(),
-        "body": body()
+        "form":x,
+        "same":same
     })
