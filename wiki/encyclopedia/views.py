@@ -13,22 +13,48 @@ class inputfield(forms.Form):
     context = forms.CharField(label="Information", widget=forms.Textarea(
         attrs={"placeholder": "Enter Description", "id": "bbox"}))
 
+def search(key,names):
+    temp = util.get_entry(key)   #exact word
+    if temp != None:
+        return temp
+    else:   #matches
+        arr = [i for i in names if key in i ]
+        return arr
+
 
 def index(request, name=False):
+    print(request.GET)
+    names = util.list_entries()
+
     if name != False:
-        q = util.get_entry(name)
-        val = md.markdown(q)
+        val = md.markdown(util.get_entry(name))
     else:
-        val = False
+        try:
+            values = search(request.GET["q"],names)
+            if type(values) != "list":
+                val = md.markdown(values)
+                print(values)
+
+            elif len(values) == 1:
+                val = md.markdown(util.get_entry(values[0]))
+
+            else:
+                print("TRUE")
+                names = values
+                val = False
+        except Exception as e:
+            print(e)
+            val = False
+
     return render(request, "encyclopedia/index.html", {
-        "entries": util.list_entries(),
+        "entries": names,
         "val": val
     })
 
 
 # newform(   name,  class, placeholde )
 def rand(request):
-    names =util.list_entries()
+    names = util.list_entries()
     t = random.randint(0,len(names))
     print(names[t])
     return index(request,names[t])
