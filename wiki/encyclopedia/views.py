@@ -1,7 +1,8 @@
-from django.shortcuts import render
+from django.shortcuts import render,redirect
 from django.http import HttpResponse as hres,HttpResponseRedirect
 from . import util
 from django import forms
+from django.template import loader
 from django.urls import reverse
 import markdown2 as md
 import random
@@ -13,56 +14,61 @@ class inputfield(forms.Form):
     context = forms.CharField(label="Information", widget=forms.Textarea(
         attrs={"placeholder": "Enter Description", "id": "bbox"}))
 
-def search(key,names):
-    temp = util.get_entry(key)   #exact word
+def search(name):
+
+    temp = util.get_entry(name)   #exact word
     if temp != None:
-        return temp
+        return temp,1
     else:   #matches
-        arr = [i for i in names if key in i ]
-        return arr
+        arr = []
+        for i in util.list_entries():
+
+            if name in i:
+                arr += [i]
+        return arr,0
 
 
 def index(request, name=False):
-    print(request.GET)
-    names = util.list_entries()
-
+    body, names = False,False
+    compare = lambda x: md.markdown(x[0]) if x[1] ==1 else False
     if name != False:
-        val = md.markdown(util.get_entry(name))
+
+        names,found = search(name)
+        body = compare([names,found])
+
+
     else:
+
         try:
-            values = search(request.GET["q"],names)
-            if type(values) != "list":
-                val = md.markdown(values)
-                print(values)
+            names, found = search(request.GET["q"])
+            body = compare([names,found])
+        except:
+            names = util.list_entries()
 
-            elif len(values) == 1:
-                val = md.markdown(util.get_entry(values[0]))
-
-            else:
-                print("TRUE")
-                names = values
-                val = False
-        except Exception as e:
-            print(e)
-            val = False
-
+    if len(names) == 0:
+        template = loader.get_template("encyclopedia/error.html")
+        return hres(template.render())
     return render(request, "encyclopedia/index.html", {
         "entries": names,
-        "val": val
+        "val": body ,
+        "title":name
     })
 
 
 # newform(   name,  class, placeholde )
 def rand(request):
     names = util.list_entries()
-    t = random.randint(0,len(names))
+    t = random.randint(0,len(names)-1)
     print(names[t])
-    return index(request,names[t])
+    #return index(request,names[t])
+    return redirect("search",name = names[t])
 
 
 
-def page(request):
+
+def page(request,name = False):
     x = inputfield()
+    print(type(request.GET))
     same = False
     if request.method == "POST":
         try:
@@ -77,7 +83,8 @@ def page(request):
 
         except:
             pass
-
+    else:
+        x = inputfield(initial={"title":name,"context":util.get_entry(name)})
     return render(request, "encyclopedia/forms.html", {
         "form":x,
         "same":same

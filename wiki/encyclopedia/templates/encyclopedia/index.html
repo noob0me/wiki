@@ -4,13 +4,19 @@
 {% endblock %}
 
 {% block body %}
-    <h1>All Pages</h1>
+    {% if val == False %}
+        <h1>All Pages</h1>
+
+    {% else %}
+        <h1><a href="{%url 'edit_page' name=title%}">edit</a></h1>
+    {% endif %}
+
     <ul>
         {% if val != False%}
                 {{val|safe}}
         {%else %}
             {% for entry in entries %}
-                <li><a href="wiki/{{entry}}">{{ entry }}</a></li>
+                <li><a href="{%url 'search' name=entry%}">{{ entry }}</a></li>
             {% endfor %}
         {%endif%}
         
