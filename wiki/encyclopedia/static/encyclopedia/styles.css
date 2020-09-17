@@ -1,12 +1,15 @@
-.main {
-margin-left:500px;
+p{
+margin-right:30px;
+word-break:break-word;
+}
 
+.main {
+    margin-left: 300px;
   font-family: arial;
   display: grid;
      grid-row-gap: 0px;
     grid-column-gap: 40px;
     grid-template-columns: auto;
-    margin-left: 300    px;
 
 }
 
@@ -31,11 +34,18 @@ margin-left:500px;
 h2{
     font-size: 50px;
 }
+
 li{
-    margin-left: 400px;
     color: red;
 }
+#edit{
+text-decoration:none;
+float:right;
+font-size:28px;
+margin-top:50px;
+margin-right:80px;
 
+}
 
 /*
 code {

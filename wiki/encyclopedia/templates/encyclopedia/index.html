@@ -1,6 +1,13 @@
 {% extends "encyclopedia/layout.html" %}
 {% block title %}
+{% if val == False %}
     Encyclopedia
+{% else %}
+    {{title}}
+
+{% endif %}
+
+
 {% endblock %}
 
 {% block body %}
@@ -8,7 +15,8 @@
         <h1>All Pages</h1>
 
     {% else %}
-        <h1><a href="{%url 'edit_page' name=title%}">edit</a></h1>
+
+        <span><a id = "edit" href="{%url 'edit_page' name=title%}">edit</a></span>
     {% endif %}
 
     <ul>
